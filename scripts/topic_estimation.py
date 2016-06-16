@@ -6,7 +6,7 @@ __author__ = 'Wattik'
 import sys
 from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
-from categories_utils import CategoriesBrowser, Topic
+from categories_utils import Category2Topic, Topic
 
 """
 The script estimates topics of a short text based on Wikipedia categories.
@@ -29,7 +29,7 @@ class TopicEstimator(object):
         self._level = level
         self._n = n
 
-    def estimate(self, text):
+    def estimate_topic(self, text):
 
         if len(text) == 0:
             raise Exception("Text is not long enough.")
@@ -38,16 +38,16 @@ class TopicEstimator(object):
         text = self._preprocess(text)
 
         # Breaking apart into n-grams, so far n=3
-        tokens = self._tokenize(text, self._n)
-
+        tokens = self._tokenize(text)
 
         # TODO: additional filtering of words
         # additional layers and filters here
         # Synonyms etc
         # Stemmatization, lemmatization, stopwords, etc.
 
+
         # Given tokens find categories in wiki's net. Go 2 levels deep.
-        proposed_topics = self._find_topics(tokens, self._level)
+        proposed_topics = self._find_topics(tokens)
 
         # Choose the best proposals of all proposed topics.
         topics = self._filter_topics(proposed_topics)
@@ -61,8 +61,8 @@ class TopicEstimator(object):
         return text
 
 
-    def _tokenize(self, text, n):
-        if n < 1:
+    def _tokenize(self, text):
+        if self._n < 1:
             raise Exception("N-grams require n >= 1.")
 
         # Create tokens from the text.
@@ -74,7 +74,7 @@ class TopicEstimator(object):
 
         # Create n-grams
         tokens = unigrams
-        for i in xrange(2, n+1):
+        for i in xrange(2, self._n+1):
             new_tokens = ngrams(unigrams, i)
 
             # Change 'new_tokens' that is a list() type into a string type
@@ -84,9 +84,9 @@ class TopicEstimator(object):
         return tokens
 
 
-    def _find_topics(self, tokens, level):
+    def _find_topics(self, tokens):
 
-        helper = CategoriesBrowser(level)
+        helper = Category2Topic(self._level)
 
         proposed_topics = list()
         for token in tokens:
@@ -111,9 +111,14 @@ class TopicEstimator(object):
 if __name__ == "__main__":
 
     # TODO: change here after beta is done.
-    text = "Shoot for the stars 'cause if you miss, you might end up on the moon."
+    text = "Jak se máš, zeptala se."
     # text = sys.argv[0]
 
     estimator = TopicEstimator()
 
-    print estimator.estimate(text)
+    topics =  estimator.estimate_topic(text)
+
+    for topic in topics:
+        print unicode(topic)
+
+
