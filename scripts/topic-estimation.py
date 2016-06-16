@@ -6,7 +6,7 @@ __author__ = 'Wattik'
 import sys
 from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
-from categories_net import CategoriesNetHelper
+from categories_utils import CategoriesBrowser
 
 """
 The script estimates topics of a short text based on Wikipedia categories.
@@ -23,9 +23,8 @@ The output is a set of topics. (TBD...)
 
 # Functions ##################################
 
-class TopicEstimator():
+class TopicEstimator(object):
 
-    @staticmethod
     def estimate(self, text):
 
         if len(text) == 0:
@@ -37,7 +36,7 @@ class TopicEstimator():
         # Breaking apart into n-grams, so far n=3
         tokens = self._tokenize(text, 3)
 
-        # TODO: ?????
+        # TODO: additional filtering of words
         # additional layers and filters here
         # Synonyms etc
         # Stemmatization, lemmatization, stopwords, etc.
@@ -72,16 +71,18 @@ class TopicEstimator():
         tokens = unigrams
         for i in xrange(2, n+1):
             tokens = tokens + list(ngrams(unigrams, i))
+        # TODO: Decide whether n>1 n-grams should be lists or not
 
         return tokens
 
 
-    def _find_topics(self, tokens, order):
+    def _find_topics(self, tokens, level):
 
-        helper = CategoriesNetHelper(order)
+        helper = CategoriesBrowser(level)
 
         topics = dict()
         for token in tokens:
+            # TODO: change to concatenating dictionaries
             topics = topics + helper.get_topics(token)
 
         proposed_topics = tokens
@@ -99,7 +100,9 @@ class TopicEstimator():
 if __name__ == "__main__":
 
     # TODO: change here after beta is done.
-
     text = "Shoot for the start 'cause if you miss, you might end up on the moon."
-    # text = TopicEstimator.estimate(sys.argv[1])
-    print TopicEstimator.estimate(text)
+    # text = sys.argv[0]
+
+    estimator = TopicEstimator()
+
+    print estimator.estimate(text)
