@@ -6,7 +6,7 @@ __author__ = 'Wattik'
 import sys
 from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
-from categories_utils import CategoriesBrowser
+from categories_utils import CategoriesBrowser, Topic
 
 """
 The script estimates topics of a short text based on Wikipedia categories.
@@ -20,10 +20,14 @@ The output is a set of topics. (TBD...)
 
 """
 
-
-# Functions ##################################
-
 class TopicEstimator(object):
+
+    _level = 2
+    _n = 3
+
+    def __init__(self, n = 3, level = 2):
+        self._level = level
+        self._n = n
 
     def estimate(self, text):
 
@@ -34,7 +38,8 @@ class TopicEstimator(object):
         text = self._preprocess(text)
 
         # Breaking apart into n-grams, so far n=3
-        tokens = self._tokenize(text, 3)
+        tokens = self._tokenize(text, self._n)
+
 
         # TODO: additional filtering of words
         # additional layers and filters here
@@ -42,7 +47,7 @@ class TopicEstimator(object):
         # Stemmatization, lemmatization, stopwords, etc.
 
         # Given tokens find categories in wiki's net. Go 2 levels deep.
-        proposed_topics = self._find_topics(tokens, 2)
+        proposed_topics = self._find_topics(tokens, self._level)
 
         # Choose the best proposals of all proposed topics.
         topics = self._filter_topics(proposed_topics)
@@ -70,8 +75,11 @@ class TopicEstimator(object):
         # Create n-grams
         tokens = unigrams
         for i in xrange(2, n+1):
-            tokens = tokens + list(ngrams(unigrams, i))
-        # TODO: Decide whether n>1 n-grams should be lists or not
+            new_tokens = ngrams(unigrams, i)
+
+            # Change 'new_tokens' that is a list() type into a string type
+            new_tokens = [' '.join(ngram) for ngram in new_tokens]
+            tokens = tokens + new_tokens
 
         return tokens
 
@@ -80,18 +88,21 @@ class TopicEstimator(object):
 
         helper = CategoriesBrowser(level)
 
-        topics = dict()
+        proposed_topics = list()
         for token in tokens:
-            # TODO: change to concatenating dictionaries
-            topics = topics + helper.get_topics(token)
+            proposed_topics = proposed_topics + helper.get_topics(token)
 
-        proposed_topics = tokens
         return proposed_topics
 
 
     def _filter_topics(self, proposed_topics):
         # TODO
         topics = proposed_topics
+
+        for topic in proposed_topics:
+            # TODO
+            pass
+
         return topics
 
 
@@ -100,7 +111,7 @@ class TopicEstimator(object):
 if __name__ == "__main__":
 
     # TODO: change here after beta is done.
-    text = "Shoot for the start 'cause if you miss, you might end up on the moon."
+    text = "Shoot for the stars 'cause if you miss, you might end up on the moon."
     # text = sys.argv[0]
 
     estimator = TopicEstimator()
