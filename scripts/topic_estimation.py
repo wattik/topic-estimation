@@ -6,7 +6,7 @@ __author__ = 'Wattik'
 import sys
 from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
-from categories_utils import Category2Topic, Topic
+from categories_utils import Token2Topic, Topic, WikipediaBrowser
 
 """
 The script estimates topics of a short text based on Wikipedia categories.
@@ -22,12 +22,12 @@ The output is a set of topics. (TBD...)
 
 class TopicEstimator(object):
 
-    _level = 2
-    _n = 3
 
-    def __init__(self, n = 3, level = 2):
-        self._level = level
-        self._n = n
+    def __init__(self, n = 3, level = 2, wiki = WikipediaBrowser()):
+        self.level = level
+        self.n = n
+        self.wiki = wiki
+
 
     def estimate_topic(self, text):
 
@@ -62,7 +62,7 @@ class TopicEstimator(object):
 
 
     def _tokenize(self, text):
-        if self._n < 1:
+        if self.n < 1:
             raise Exception("N-grams require n >= 1.")
 
         # Create tokens from the text.
@@ -74,7 +74,7 @@ class TopicEstimator(object):
 
         # Create n-grams
         tokens = unigrams
-        for i in xrange(2, self._n+1):
+        for i in xrange(2, self.n+1):
             new_tokens = ngrams(unigrams, i)
 
             # Change 'new_tokens' that is a list() type into a string type
@@ -86,7 +86,7 @@ class TopicEstimator(object):
 
     def _find_topics(self, tokens):
 
-        helper = Category2Topic(self._level)
+        helper = Token2Topic(self.wiki, self.level)
 
         proposed_topics = list()
         for token in tokens:
@@ -106,15 +106,19 @@ class TopicEstimator(object):
         return topics
 
 
+
 # Main: ##################################
 
 if __name__ == "__main__":
 
     # TODO: change here after beta is done.
-    text = "Jak se máš, zeptala se."
+    text = "auta"
     # text = sys.argv[0]
 
-    estimator = TopicEstimator()
+    estimator = TopicEstimator(level=5)
+    estimator.wiki.set_rate_limiting(False)
+    estimator.wiki.change_language("cs")
+
 
     topics =  estimator.estimate_topic(text)
 

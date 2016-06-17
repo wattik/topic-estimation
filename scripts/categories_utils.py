@@ -4,13 +4,12 @@
 __author__ = 'Wattik'
 
 import redis
+import wikipedia
+from wikipedia.exceptions import *
+import records
 
 
 class Topic(object):
-
-    topic = None
-    hierarchy_level = None
-    generating_ngram = None
 
     # etc. Type=(category, article) ...... TODO: is needed?
 
@@ -26,44 +25,47 @@ class Topic(object):
         return other.topic == self.topic
 
 
-class Category2Topic(object):
+class Token2Topic(object):
 
-    _level = None
-    _wiki = None
 
-    def __init__(self, level):
-        self._level = level
-        self._wiki = WikipediaBrowser()
+    def __init__(self, wiki, level):
+        self.level = level
+        self.wiki = wiki
 
     """
     Returns a list of Topics()
     """
     def get_topics(self, token):
-        topics = list()
+        topics = []
 
         # Find out whether it's a wiki page ..
-        if self._wiki.is_page(token):
-            # ... and if so, go '_level'-times deeper to find categories.
-            topics = topics + self._iterate_over_supercategories(Topic(token, 0, None), 1)
+        page = self.wiki.is_page(token)
+
+        # ... and if so, go 'level'-times deeper to find categories.
+        if page == True:
+            topics = topics + self._dfs_over_categories(Topic(token, 0, None), 1)
+
+        # ... of if it brings in the disambiguation page, then get topics from each of the options
+        elif page is list:
+            for option in page:
+                topics = topics + self.get_topics(option)
 
         return topics
 
     """
-    Depth-first search in categories.
-
-    This goes until level = 0, then it stops.
+    Depth-first search throughout categories.
     """
-    def _iterate_over_supercategories(self, topic, level):
-        if level > self._level:
+    def _dfs_over_categories(self, topic, level):
+        if level > self.level:
             return []
 
-        supercategories = self._wiki.get_page_categories(topic.topic)
+        supercategories = self.wiki.get_page_categories(topic.topic)
         list_of_topics = self._categories2topics(supercategories, topic.topic, level)
 
         output = list_of_topics[:]
 
         for supertopic in list_of_topics:
-                output = output + self._iterate_over_supercategories(supertopic, level+1)
+                output = output + self._dfs_over_categories(supertopic, level+1)
 
         return output
 
@@ -77,22 +79,78 @@ class Category2Topic(object):
 
 class WikipediaBrowser(object):
 
-    _redis = None
 
     def __init__(self):
-        self._redis = RedisHelper()
+        #self._redis = RedisHelper()
+        pass
 
     def is_page(self, name):
+        try:
+            wikipedia.page(name)
+        except PageError:
+            return False
+        except DisambiguationError as err:
+            print err.options
+            return err.options
+        except HTTPTimeoutError as err:
+            #TODO ???? HUH
+            print err
+            return False
+
         return True
 
     def get_page_categories(self, name):
-        return [u'Car' , u'Plane']
+        page = wikipedia.page(name)
+        return page.categories
+
+    def change_language(self, lang):
+        wikipedia.set_lang(lang)
+
+    def set_rate_limiting(self, rate):
+        wikipedia.set_rate_limiting(rate)
+
+
+class WikipediaLocalDB(object):
+
+
+    def __init__(self):
+        self.db = records.Database('mysql://socialbakers:tajneheslo@localhost/wikipedia')
+
+
+    # TODO
+    def is_page(self, name):
+        try:
+            wikipedia.page(name)
+        except PageError:
+            return False
+        except DisambiguationError as err:
+            print err.options
+            return err.options
+        except HTTPTimeoutError as err:
+            #TODO ???? HUH
+            print err
+            return False
+
+        return True
+
+    def get_page_categories(self, name):
+        page = wikipedia.page(name)
+        return page.categories
+
+    def change_language(self, lang):
+        wikipedia.set_lang(lang)
+
+    def set_rate_limiting(self, rate):
+        wikipedia.set_rate_limiting(rate)
 
 
 
+"""
+
+NOT NEEDED NOW!
+
+"""
 class RedisHelper(object):
-
-    _redis = None
 
     def __init__(self):
         if RedisHelper._redis is None:
@@ -101,19 +159,3 @@ class RedisHelper(object):
         # TODO: Check whether db is online and if it contains data
 
 
-
-"""
-Wikipedia parser might be used for parsing lot of files into REDIS db.
-"""
-class WikipediaParser(object):
-
-    _redis = None
-
-    def __init__(self):
-        if self._redis is None:
-            self._redis = RedisHelper()
-
-
-    # TODO: establish how to read the files, i.e. which form the dump is
-    def parse(self, directory):
-        return True
