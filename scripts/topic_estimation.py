@@ -6,7 +6,8 @@ __author__ = 'Wattik'
 import sys
 from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
-from categories_utils import Token2Topic, Topic, WikipediaBrowser
+from categories_utils import Token2Topic, Topic
+from wikipedia_utils import *
 
 """
 The script estimates topics of a short text based on Wikipedia categories.
@@ -23,7 +24,7 @@ The output is a set of topics. (TBD...)
 class TopicEstimator(object):
 
 
-    def __init__(self, n = 3, level = 2, wiki = WikipediaBrowser()):
+    def __init__(self, wiki, n = 3, level = 2):
         self.level = level
         self.n = n
         self.wiki = wiki
@@ -50,13 +51,14 @@ class TopicEstimator(object):
         proposed_topics = self._find_topics(tokens)
 
         # Choose the best proposals of all proposed topics.
-        topics = self._filter_topics(proposed_topics)
+        frequencies = self._filter_topics(proposed_topics)
 
-        return topics
+        return frequencies
 
 
     def _preprocess(self, text):
-        text = unicode(text, 'utf-8')
+        if not isinstance(text, unicode):
+            text = unicode(text, 'utf-8')
         text = text.lower()
         return text
 
@@ -78,7 +80,7 @@ class TopicEstimator(object):
             new_tokens = ngrams(unigrams, i)
 
             # Change 'new_tokens' that is a list() type into a string type
-            new_tokens = [' '.join(ngram) for ngram in new_tokens]
+            new_tokens = ['_'.join(ngram) for ngram in new_tokens]
             tokens = tokens + new_tokens
 
         return tokens
@@ -92,18 +94,24 @@ class TopicEstimator(object):
         for token in tokens:
             proposed_topics = proposed_topics + helper.get_topics(token)
 
+
+        del helper
+
         return proposed_topics
 
 
     def _filter_topics(self, proposed_topics):
-        # TODO
-        topics = proposed_topics
+
+        # Frequency of elements
+        fr = {}
 
         for topic in proposed_topics:
-            # TODO
-            pass
+            if fr.has_key(topic):
+                fr[topic] += 1
+            else:
+                fr.update({topic: 1})
 
-        return topics
+        return fr
 
 
 
@@ -112,17 +120,21 @@ class TopicEstimator(object):
 if __name__ == "__main__":
 
     # TODO: change here after beta is done.
-    text = "auta"
+    text = u'java ruby programovací jazyky'
     # text = sys.argv[0]
 
-    estimator = TopicEstimator(level=5)
-    estimator.wiki.set_rate_limiting(False)
-    estimator.wiki.change_language("cs")
+    print "Looking for topics in: " + text
 
+    wiki = WikipediaMySQL("socialbakers", "tajneheslo")
+
+    estimator = TopicEstimator(wiki)
 
     topics =  estimator.estimate_topic(text)
 
-    for topic in topics:
-        print unicode(topic)
+    print "\n Proposed topics: \n"
+
+    for topic, frequency in topics.iteritems():
+        print unicode(topic.topic, "utf-8") + " " + str(frequency)
+
 
 
