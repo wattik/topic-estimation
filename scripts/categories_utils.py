@@ -19,6 +19,11 @@ class Topic(object):
     def __eq__(self, other):
         return other.topic == self.topic
 
+    def __cmp__(self, other):
+        return self.__cmp__(other)
+
+    def __hash__(self):
+        return self.topic.__hash__()
 
 class Token2Topic(object):
 
@@ -31,7 +36,7 @@ class Token2Topic(object):
     Returns a list of Topics()
     """
     def get_topics(self, token):
-        topics = []
+
 
         # TODO get rid of 'is_page()' since its redundant: get_
 
@@ -40,7 +45,7 @@ class Token2Topic(object):
 
         # ... and if so, go 'level'-times deeper to find categories...
         if page == True:
-            topics = topics + self._dfs_over_categories(Topic(token, 0, None), 1)
+            topics = self._dfs_over_categories(Topic(token, 0, None), 1)
 
         # ... of if it brings in the disambiguation page, then get topics from each of the options.
         elif page is list:
@@ -53,6 +58,9 @@ class Token2Topic(object):
     Depth-first search throughout categories.
     """
     def _dfs_over_categories(self, topic, level):
+
+
+
         if level > self.level:
             return []
 

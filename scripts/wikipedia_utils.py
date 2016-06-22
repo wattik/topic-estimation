@@ -21,7 +21,7 @@ class AbstractWikipedia(object):
     Otherwise, return False.
     """
     def is_page(self, name):
-        raise NotImplementedError("Abstract method. Do not do the same mistake of calling this method again, otherwise you'd be punished.")
+        raise NotImplementedError("Abstract method. Do not do the same mistake of calling this method again, otherwise you'll be punished.")
 
     def get_page_categories(self, name):
         raise NotImplementedError("Abstract method.")

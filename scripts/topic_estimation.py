@@ -100,41 +100,33 @@ class TopicEstimator(object):
         return proposed_topics
 
 
-    def _filter_topics(self, proposed_topics):
-
+    def _get_frequencies(self, list):
         # Frequency of elements
         fr = {}
 
-        for topic in proposed_topics:
-            if fr.has_key(topic):
+        for topic in list:
+            if topic in fr:
                 fr[topic] += 1
             else:
                 fr.update({topic: 1})
 
         return fr
 
+    def _get_topics_with_fr(self, dictionary, fr):
 
+        filter_out = dict()
+        for topic, value in dictionary.iteritems():
+            if value >= fr:
+                filter_out.update({topic: value})
 
-# Main: ##################################
+        return  filter_out
 
-if __name__ == "__main__":
+    def _filter_topics(self, proposed_topics):
+        frequency = self._get_frequencies(proposed_topics)
 
-    # TODO: change here after beta is done.
-    text = u'java ruby programovací jazyky'
-    # text = sys.argv[0]
+        filtered = self._get_topics_with_fr(frequency, 3)
 
-    print "Looking for topics in: " + text
-
-    wiki = WikipediaMySQL("socialbakers", "tajneheslo")
-
-    estimator = TopicEstimator(wiki)
-
-    topics =  estimator.estimate_topic(text)
-
-    print "\n Proposed topics: \n"
-
-    for topic, frequency in topics.iteritems():
-        print unicode(topic.topic, "utf-8") + " " + str(frequency)
+        return filtered
 
 
 
