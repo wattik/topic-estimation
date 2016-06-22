@@ -51,7 +51,7 @@ class WikipediaBrowser(AbstractWikipedia):
 
         try:
             page = wiki.page(pageid=page_id)
-        except PageError or ValueError:
+        except (PageError, ValueError):
             page = wiki.page(name)
 
         return self._afterprocess_categories(page.categories)
@@ -150,7 +150,7 @@ class WikipediaMySQL(AbstractWikipedia):
         # via requests is utilized. In the future, this will be implemented as well via the local mysql db.
 
         try:
-            self.helper.get_page_categories_unprotected()
+            self.helper.get_page_categories_unprotected(name, page_id=page_id)
         except DisambiguationError as err:
             # Dirty borrowing of private method
             links = self.helper._afterprocess_categories(err.options)

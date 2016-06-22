@@ -37,40 +37,31 @@ class Token2Topic(object):
     """
     def get_topics(self, token):
 
+        parent_topic = Topic(token, 0, None)
 
-        # TODO get rid of 'is_page()' since its redundant: get_
+        topics = self._dfs_over_categories(parent_topic)
 
-        # Find out whether it's a wiki page ..
-        page = self.wiki.is_page(token)
-
-        # ... and if so, go 'level'-times deeper to find categories...
-        if page == True:
-            topics = self._dfs_over_categories(Topic(token, 0, None), 1)
-
-        # ... of if it brings in the disambiguation page, then get topics from each of the options.
-        elif page is list:
-            for option in page:
-                topics = topics + self.get_topics(option)
 
         return topics
 
     """
     Depth-first search throughout categories.
     """
-    def _dfs_over_categories(self, topic, level):
+    def _dfs_over_categories(self, topic):
 
+        output = [topic]
 
+        level = topic.hierarchy_level + 1
 
+        # If we reached the deepest level, then exit.
         if level > self.level:
-            return []
+            return output
 
         supercategories = self.wiki.get_page_categories(topic.topic)
         list_of_topics = self._categories2topics(supercategories, topic.topic, level)
 
-        output = list_of_topics[:]
-
         for supertopic in list_of_topics:
-                output = output + self._dfs_over_categories(supertopic, level+1)
+                output = output + self._dfs_over_categories(supertopic)
 
         return output
 
