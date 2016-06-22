@@ -64,7 +64,7 @@ class WikipediaBrowser(AbstractWikipedia):
             if len(parts) == 2:
                 cat = cat[1]
 
-            cat.replace(u' ', u'_')
+            cat.replace(' ', '_')
             filtered_cats.append(cat)
 
         return filtered_cats

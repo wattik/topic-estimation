@@ -7,6 +7,9 @@ from scripts.topic_estimation import TopicEstimator
 from scripts.wikipedia_utils import WikipediaMySQL
 import sys
 
+
+
+
 if __name__ == "__main__":
 
     # text = u'java ruby programovací jazyky'
@@ -16,7 +19,7 @@ if __name__ == "__main__":
 
     wiki = WikipediaMySQL("socialbakers", "tajneheslo")
     estimator = TopicEstimator(wiki)
-    topics =  estimator.estimate_topic(text)
+    topics, list_of_parents =  estimator.estimate_topic(text)
 
     print "Proposed topics: \n"
 
