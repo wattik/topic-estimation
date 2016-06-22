@@ -18,7 +18,7 @@ if __name__ == "__main__":
     estimator = TopicEstimator(wiki)
     topics =  estimator.estimate_topic(text)
 
-    print "\n Proposed topics: \n"
+    print "Proposed topics: \n"
 
     for topic, frequency in topics.iteritems():
         print topic.topic + " " + str(frequency)
