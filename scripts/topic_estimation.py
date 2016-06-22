@@ -52,9 +52,9 @@ class TopicEstimator(object):
         proposed_topics, list_of_parents = self._find_topics(tokens)
 
         # Choose the best proposals of all proposed topics.
-        frequencies = self._filter_topics(proposed_topics)
+        proposed_topics = self._filter_topics(proposed_topics)
 
-        return frequencies, list_of_parents
+        return proposed_topics, list_of_parents
 
 
     def _preprocess(self, text):
@@ -111,33 +111,13 @@ class TopicEstimator(object):
         return proposed_topics, list_of_parents
 
 
-    def _get_frequencies(self, list):
-        # Frequency of elements
-        fr = {}
-
-        for topic in list:
-            if topic in fr:
-                fr[topic] += 1
-            else:
-                fr.update({topic: 1})
-
-        return fr
-
-    def _get_topics_with_fr(self, dictionary, fr):
-
-        filter_out = dict()
-        for topic, value in dictionary.iteritems():
-            if value >= fr:
-                filter_out.update({topic: value})
-
-        return  filter_out
 
     def _filter_topics(self, proposed_topics):
-        frequency = self._get_frequencies(proposed_topics)
 
-        filtered = self._get_topics_with_fr(frequency, 3)
+        # TODO: filter some of the topics
 
-        return filtered
+
+        return proposed_topics
 
 
 
