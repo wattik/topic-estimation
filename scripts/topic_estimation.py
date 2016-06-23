@@ -47,7 +47,6 @@ class TopicEstimator(object):
         # Synonyms etc
         # Stemmatization, lemmatization, stopwords, etc.
 
-
         # Given tokens find categories in wiki's net. Go 2 levels deep.
         proposed_topics, list_of_parents = self._find_topics(tokens)
 
@@ -96,17 +95,18 @@ class TopicEstimator(object):
 
         step = float(100)/float(len(tokens))
         progress = float(0)
+        if TopicEstimator.DEBUG: print "\n%0.1f %%" % progress
 
         for token in tokens:
-            progress += step
-            if TopicEstimator.DEBUG: print "%0.1f %%" % progress
-
             new_incomers, parent = helper.get_topics(token)
             proposed_topics = proposed_topics + new_incomers
             list_of_parents.append(parent)
 
+            progress += step
+            if TopicEstimator.DEBUG: print "%0.1f %%" % progress
+
         del helper
-        if TopicEstimator.DEBUG: print "\n=======================================\n"
+        if TopicEstimator.DEBUG: print "=======================================\n"
 
         return proposed_topics, list_of_parents
 

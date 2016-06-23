@@ -11,9 +11,13 @@ class Topic(object):
         self.hierarchy_level = hierarchy_level
         self.topic = topic
         self.parents = None
+        self.gen_by = u'N/A'
 
     def __repr__(self):
-        return self.topic + ' by ' + self.generating_ngram
+        return self.topic + u' by ' + self.generating_ngram
+
+    def __str__(self):
+        return self.__repr__()
 
     def __eq__(self, other):
         return other.topic == self.topic
@@ -36,7 +40,7 @@ class Token2Topic(object):
     """
     def get_topics(self, token):
 
-        parent_topic = Topic(token, 0, None)
+        parent_topic = Topic(token, 0, u'-')
 
         topics = self._dfs_over_categories(parent_topic)
 
@@ -53,17 +57,28 @@ class Token2Topic(object):
 
         # If we reached the deepest level, then exit.
         if level > self.level:
+            topic.gen_by  = "end_node"
             return output
 
-        supercategories = self.wiki.get_page_categories(topic.topic)
+        supercategories, gen_by = self.wiki.get_page_categories(topic.topic)
+        supercategories = self._process_proposals(supercategories)
         list_of_topics = self._categories2topics(supercategories, topic.topic, level)
 
         topic.parents = list_of_topics
+        topic.gen_by = gen_by
 
         for supertopic in list_of_topics:
                 output = output + self._dfs_over_categories(supertopic)
 
         return output
+
+    def _process_proposals(self, list_of_categories):
+        list_of_categories = list(set(list_of_categories))
+        output = []
+        for i in list_of_categories:
+            output.append(i.lower())
+        return output
+
 
     def _categories2topics(self, subcategories, ngram, level):
         topics = list()

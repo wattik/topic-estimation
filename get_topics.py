@@ -19,5 +19,12 @@ if __name__ == "__main__":
     estimator = TopicEstimator(wiki)
 
     proposed_topics, list_of_parents =  estimator.estimate_topic(text)
+
+    #####################
+
     vis = Visualizer(proposed_topics, list_of_parents)
+    vis.print_frequencies_by_levels()
+    print "\n"
+    vis.print_tree()
+
 

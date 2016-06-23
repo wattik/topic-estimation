@@ -35,24 +35,26 @@ class WikipediaBrowser(AbstractWikipedia):
 
     def get_page_categories(self, name, page_id=None):
         categories = []
-
+        gen_by = "empty"
         try:
             categories = self.get_page_categories_unprotected(name, page_id)
+            gen_by = u'wiki_api'
         except DisambiguationError as err:
             categories = self._afterprocess_categories(err.options)
+            gen_by = u'wiki_api'
         except PageError:
-            pass
+            gen_by = u'empty-wiki_api'
         except HTTPTimeoutError:
             print "Wikipedia has kicked us out. :("
 
-        return categories
+        return categories, gen_by
 
     def get_page_categories_unprotected(self, name, page_id=None):
 
         try:
             page = wiki.page(pageid=page_id)
         except (PageError, ValueError):
-            page = wiki.page(name)
+            page = wiki.page(name, auto_suggest=False)
 
         return self._afterprocess_categories(page.categories)
 
@@ -62,10 +64,11 @@ class WikipediaBrowser(AbstractWikipedia):
             parts = cat.split(u':', 1)
             # This removes the first word before ':'
             if len(parts) == 2:
-                cat = cat[1]
+                cat = parts[1]
 
-            cat.replace(' ', '_')
+            cat = cat.replace(' ', '_')
             filtered_cats.append(cat)
+
 
         return filtered_cats
 
@@ -93,7 +96,18 @@ class WikipediaMySQL(AbstractWikipedia):
         # TODO #3: the db entries shall be RESTRUCTURED according to text-preprocessing we will agree on
         # TODO  |  now, the equivalence uses only simplified characters lowercased – very loose.
 
+
+    def _gen(self, gen_by, newer):
+        if gen_by is None:
+            return newer
+        elif gen_by == u'local_db':
+            return gen_by
+        else:
+            return u'combined'
+
+
     def get_page_categories(self, name):
+        gen_by = "empty-local_db"
         categories = []
 
         # Start with MySQL DB query that delivers dictionary of results.
@@ -116,17 +130,19 @@ class WikipediaMySQL(AbstractWikipedia):
                 #   then a mixture of both cases shall be observed if and only if 'name' leads to more than one page.
 
                 if self._is_disambiguation_page(category):
+                    self._gen(gen_by, 'wiki_api')
                     categories = categories + self._get_links_from_disambiguation_page(page["page_title"], page_id=page["page_id"])
                 else:
+                    gen_by = u'local_db'
                     categories.append(category)
 
         # Dirty trick: if an error is raised due to encodings, the helper class is utilized. This shall be eliminated in future versions.
         except UnicodeEncodeError as err:
             # TODO solve encoding issue
             if self.help:
-                categories = self.helper.get_page_categories(name)
+                categories, gen_by = self.helper.get_page_categories(name)
 
-        return categories
+        return categories, gen_by
 
     def _is_disambiguation_page(self, name):
 
@@ -146,7 +162,7 @@ class WikipediaMySQL(AbstractWikipedia):
     def _get_links_from_disambiguation_page(self, name, page_id=None):
         links = []
 
-        # At this stage, instead of parsing html and looking for links in it, the WikipediaBrowesed class providing this tool
+        # At this stage, instead of parsing html and looking for links in it, the WikipediaBroweser class providing this tool
         # via requests is utilized. In the future, this will be implemented as well via the local mysql db.
 
         try:
@@ -162,17 +178,4 @@ class WikipediaMySQL(AbstractWikipedia):
     def change_language(self, lang):
         AbstractWikipedia.change_language(self, lang)
         # TODO change db to prefix
-
-
-"""
-
-NOT NEEDED NOW!
-
-"""
-class WikipediaRedis(AbstractWikipedia):
-
-    def __init__(self, lang = "cs"):
-        pass
-        # TODO: Check whether db is online and if it contains data
-
 
