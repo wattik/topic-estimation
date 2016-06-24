@@ -23,6 +23,7 @@ The output is a set of topics. (TBD...)
 
 class TopicEstimator(object):
 
+    DEBUG = True
 
     def __init__(self, wiki, n = 3, level = 2):
         self.level = level
@@ -46,14 +47,13 @@ class TopicEstimator(object):
         # Synonyms etc
         # Stemmatization, lemmatization, stopwords, etc.
 
-
         # Given tokens find categories in wiki's net. Go 2 levels deep.
-        proposed_topics = self._find_topics(tokens)
+        proposed_topics, list_of_parents = self._find_topics(tokens)
 
         # Choose the best proposals of all proposed topics.
-        frequencies = self._filter_topics(proposed_topics)
+        proposed_topics = self._filter_topics(proposed_topics)
 
-        return frequencies
+        return proposed_topics, list_of_parents
 
 
     def _preprocess(self, text):
@@ -90,43 +90,34 @@ class TopicEstimator(object):
 
         helper = Token2Topic(self.wiki, self.level)
 
-        proposed_topics = list()
-        for token in tokens:
-            proposed_topics = proposed_topics + helper.get_topics(token)
+        proposed_topics = []
+        list_of_parents = []
 
+        step = float(100)/float(len(tokens))
+        progress = float(0)
+        if TopicEstimator.DEBUG: print "\n%0.1f %%" % progress
+
+        for token in tokens:
+            new_incomers, parent = helper.get_topics(token)
+            proposed_topics = proposed_topics + new_incomers
+            list_of_parents.append(parent)
+
+            progress += step
+            if TopicEstimator.DEBUG: print "%0.1f %%" % progress
 
         del helper
+        if TopicEstimator.DEBUG: print "=======================================\n"
 
-        return proposed_topics
+        return proposed_topics, list_of_parents
 
 
-    def _get_frequencies(self, list):
-        # Frequency of elements
-        fr = {}
-
-        for topic in list:
-            if topic in fr:
-                fr[topic] += 1
-            else:
-                fr.update({topic: 1})
-
-        return fr
-
-    def _get_topics_with_fr(self, dictionary, fr):
-
-        filter_out = dict()
-        for topic, value in dictionary.iteritems():
-            if value >= fr:
-                filter_out.update({topic: value})
-
-        return  filter_out
 
     def _filter_topics(self, proposed_topics):
-        frequency = self._get_frequencies(proposed_topics)
 
-        filtered = self._get_topics_with_fr(frequency, 3)
+        # TODO: filter some of the topics
 
-        return filtered
+
+        return proposed_topics
 
 
 

@@ -6,6 +6,7 @@ __author__ = 'Wattik'
 from scripts.topic_estimation import TopicEstimator
 from scripts.wikipedia_utils import WikipediaMySQL
 import sys
+from scripts.visualizer import Visualizer
 
 if __name__ == "__main__":
 
@@ -16,9 +17,16 @@ if __name__ == "__main__":
 
     wiki = WikipediaMySQL("socialbakers", "tajneheslo")
     estimator = TopicEstimator(wiki)
-    topics =  estimator.estimate_topic(text)
 
-    print "\n Proposed topics: \n"
+    proposed_topics, list_of_parents =  estimator.estimate_topic(text)
 
-    for topic, frequency in topics.iteritems():
-        print topic.topic + " " + str(frequency)
+    #####################
+
+    vis = Visualizer(proposed_topics, list_of_parents)
+    vis.print_frequencies()
+    print
+    vis.print_frequencies_by_levels()
+    print "\n"
+    vis.print_tree()
+
+
