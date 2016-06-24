@@ -53,8 +53,11 @@ class WikipediaBrowser(AbstractWikipedia):
 
         try:
             page = wiki.page(pageid=page_id)
+
         except (PageError, ValueError):
-            page = wiki.page(name, auto_suggest=False)
+            page = wiki.page(name)
+            if u'a' in page.categories:
+                print page.title
 
         return self._afterprocess_categories(page.categories)
 
@@ -62,12 +65,13 @@ class WikipediaBrowser(AbstractWikipedia):
         filtered_cats = []
         for cat in cats:
             parts = cat.split(u':', 1)
+            final = cat
             # This removes the first word before ':'
             if len(parts) == 2:
-                cat = parts[1]
+                final = parts[1]
 
-            cat = cat.replace(' ', '_')
-            filtered_cats.append(cat)
+            final = final.replace(' ', '_')
+            filtered_cats.append(final)
 
 
         return filtered_cats
@@ -85,14 +89,15 @@ class WikipediaMySQL(AbstractWikipedia):
 
     """
     help : if True, then queries not found in the local DB are requested from wikipedia data services via the module
+
+    It's expected that there exists a database called accordingly to the chosen language, eg. "cs_wikipedia"
     """
-    def __init__(self, username, password, host = "localhost", db = "wikipedia", lang = "cs", help = True):
+    def __init__(self, username, password, host = "localhost", lang = "cs", help = False):
         AbstractWikipedia.__init__(self, lang)
-        self.db = records.Database('mysql://' + username + ':' + password + '@' + host + '/' + db)
+        self.db = records.Database('mysql://' + username + ':' + password + '@' + host + '/' + lang + '_wikipedia?charset=utf8')
         self.help = help
         self.helper = WikipediaBrowser(lang=lang)
 
-        # TODO #2: rename db wikipedia to cs_wikipedia (or tables)
         # TODO #3: the db entries shall be RESTRUCTURED according to text-preprocessing we will agree on
         # TODO  |  now, the equivalence uses only simplified characters lowercased – very loose.
 
@@ -132,6 +137,9 @@ class WikipediaMySQL(AbstractWikipedia):
                 if self._is_disambiguation_page(category):
                     self._gen(gen_by, 'wiki_api')
                     categories = categories + self._get_links_from_disambiguation_page(page["page_title"], page_id=page["page_id"])
+                # Assuming that if a page is redirect than page_id is only once in the list.
+                elif self._is_redirect(page["page_id"]):
+                    pass
                 else:
                     gen_by = u'local_db'
                     categories.append(category)
@@ -139,10 +147,17 @@ class WikipediaMySQL(AbstractWikipedia):
         # Dirty trick: if an error is raised due to encodings, the helper class is utilized. This shall be eliminated in future versions.
         except UnicodeEncodeError as err:
             # TODO solve encoding issue
+            print("UnicodeEncodeError while DB connection: If this exception was raised, change 'help=True' handler when constructing "
+                  "'WikiepdiaMySQL() object. Then, in cases similar to this one, the Wikipedia API will be used to look for categories.")
             if self.help:
                 categories, gen_by = self.helper.get_page_categories(name)
 
         return categories, gen_by
+
+
+    def _is_redirect(self, page_id):
+        return False
+
 
     def _is_disambiguation_page(self, name):
 
@@ -177,5 +192,6 @@ class WikipediaMySQL(AbstractWikipedia):
 
     def change_language(self, lang):
         AbstractWikipedia.change_language(self, lang)
+        if self.help: self.helper.change_language(lang)
         # TODO change db to prefix
 

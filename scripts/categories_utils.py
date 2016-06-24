@@ -61,7 +61,7 @@ class Token2Topic(object):
             return output
 
         supercategories, gen_by = self.wiki.get_page_categories(topic.topic)
-        supercategories = self._process_proposals(supercategories)
+        supercategories = self._process_proposals(topic, supercategories)
         list_of_topics = self._categories2topics(supercategories, topic.topic, level)
 
         topic.parents = list_of_topics
@@ -72,11 +72,13 @@ class Token2Topic(object):
 
         return output
 
-    def _process_proposals(self, list_of_categories):
+    def _process_proposals(self, topic, list_of_categories):
         list_of_categories = list(set(list_of_categories))
         output = []
         for i in list_of_categories:
-            output.append(i.lower())
+            i = i.lower()
+            if i != topic.topic:
+                output.append(i.lower())
         return output
 
 

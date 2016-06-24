@@ -23,6 +23,8 @@ if __name__ == "__main__":
     #####################
 
     vis = Visualizer(proposed_topics, list_of_parents)
+    vis.print_frequencies()
+    print
     vis.print_frequencies_by_levels()
     print "\n"
     vis.print_tree()

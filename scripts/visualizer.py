@@ -41,8 +41,7 @@ class Visualizer(object):
 
 
     def print_frequencies(self, cut_frequency=5):
-        for f, v in self.get_frequencies(cut_frequency=cut_frequency).iteritems():
-            print f.topic + " " + unicode(v)
+        self._print_sorted_by_number(self.get_frequencies(cut_frequency=cut_frequency))
 
 
     def print_all_topics(self):
@@ -66,6 +65,29 @@ class Visualizer(object):
 
         return self.dict_by_levels
 
+    def _print_sorted_by_number(self, dictionary_to_be_sorted):
+        d = dict(dictionary_to_be_sorted)
+
+        fr = dict()
+
+        highest = 0
+
+        for k,v in d.iteritems():
+            if v > highest: highest = v
+
+            if v not in fr:
+                fr.update({v:[k]})
+            else:
+                fr[v].append(k)
+
+        while highest > 0:
+            if highest in fr:
+                rank_list = fr[highest]
+
+                for i in rank_list:
+                    print "%3.0d        %s" % (highest, i)
+            highest -= 1
+
     def print_frequencies_by_levels(self, cut_frequency = 2):
         d = self.get_dict_by_levels()
 
@@ -74,8 +96,8 @@ class Visualizer(object):
             print "\n Level " + str(level) + ":"
             topics = self._get_topics_with_fr(fr, cut_frequency)
 
-            for k, v in topics.iteritems():
-                print unicode(k) + " " + unicode(v)
+            self._print_sorted_by_number(topics)
+
 
     def print_tree(self):
         self._print_tree(self.list_of_parents, u'- ')
