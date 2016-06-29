@@ -6,6 +6,7 @@ __author__ = 'Wattik'
 import wikipedia as wiki
 from wikipedia.exceptions import *
 import records
+import redis
 
 
 class AbstractWikipedia(object):
@@ -18,6 +19,22 @@ class AbstractWikipedia(object):
 
     def change_language(self, lang):
         self.lang = lang
+
+    def _is_disambiguation_page(self, name):
+
+        __DISAMBIGUATION_CATEGORIES = {'cs': u'Wikipedie:Rozcestníky',
+                                       'en': u'Disambiguation_pages'} #TODO check
+
+        if type(name) == unicode or type(name) == str:
+            if name == __DISAMBIGUATION_CATEGORIES[self.lang]:
+                return True
+
+        if type(name) == list:
+            for i in name:
+                if name == __DISAMBIGUATION_CATEGORIES[self.lang]:
+                    return True
+
+        return False
 
 
 class WikipediaBrowser(AbstractWikipedia):
@@ -152,24 +169,7 @@ class WikipediaMySQL(AbstractWikipedia):
 
         return categories, gen_by
 
-
     def _is_redirect(self, page_id):
-        return False
-
-
-    def _is_disambiguation_page(self, name):
-
-        __DISAMBIGUATION_CATEGORIES = {'cs' : u'Wikipedie:Rozcestníky'}
-
-        if type(name) == unicode or type(name) == str:
-            if name == __DISAMBIGUATION_CATEGORIES[self.lang]:
-                return True
-
-        if type(name) == list:
-            for i in name:
-                if name == __DISAMBIGUATION_CATEGORIES[self.lang]:
-                    return True
-
         return False
 
     def _get_links_from_disambiguation_page(self, name, page_id=None):
@@ -193,3 +193,44 @@ class WikipediaMySQL(AbstractWikipedia):
         if self.help: self.helper.change_language(lang)
         # TODO change db to prefix
 
+
+class WikipediaRedis(AbstractWikipedia):
+
+    def __init__(self, lang = "en"):
+        if lang != "en":
+            self.change_language(lang)
+        AbstractWikipedia.__init__(self,lang)
+        self.r = redis.StrictRedis()
+
+        self.prep = {"page":"p:", "category": "c:", "redirect":"r:"}
+
+
+    def get_page_categories(self, name):
+        categories = []
+        gen_by
+
+        # Chech if there is any page of this name
+        page_id = self.r.get(self.prep["page"] + name)
+        if page_id is None:
+            return categories
+
+        # if it leads to redirect, get the redirect (assuming only one redirect)
+        redirect_name = self.r.get(self.prep["redirect"] + page_id)
+        if redirect_name is not None:
+            page_id = self.r.get(self.prep["page"] + redirect_name)
+
+        # get its categories
+        response = self.r.lrange(self.prep["category"] + page_id, O, -1)
+
+        # convert them into unicode and
+        for i in response:
+            if i is not unicode: i = unicode(i, "utf-8")
+            # TODO: if is disambigous, find its links.
+            #       now only passes
+            categories.append(i)
+
+        return categories
+
+
+    def change_language(self, lang):
+        raise NotImplementedError("When using REDIS, only the ENGLISH language is available.")
