@@ -4,7 +4,7 @@
 __author__ = 'Wattik'
 
 from scripts.topic_estimation import TopicEstimator
-from scripts.wikipedia_utils import WikipediaMySQL
+from scripts.wikipedia_utils import *
 import sys
 from scripts.visualizer import Visualizer
 
@@ -15,7 +15,8 @@ if __name__ == "__main__":
 
     print "Looking for topics in: " + text
 
-    wiki = WikipediaMySQL("socialbakers", "tajneheslo")
+    # wiki = WikipediaMySQL("socialbakers", "tajneheslo")
+    wiki = WikipediaRedis()
     estimator = TopicEstimator(wiki)
 
     proposed_topics, list_of_parents =  estimator.estimate_topic(text)
