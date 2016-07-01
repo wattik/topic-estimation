@@ -207,7 +207,7 @@ class WikipediaRedis(AbstractWikipedia):
 
     def get_page_categories(self, name):
         categories = []
-        gen_by
+        gen_by = "redis"
 
         # Chech if there is any page of this name
         page_id = self.r.get(self.prep["page"] + name)
