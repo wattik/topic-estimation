@@ -212,7 +212,7 @@ class WikipediaRedis(AbstractWikipedia):
         # Check if there is any page of this name
         page_id = self.r.get(self.prep["page"] + name)
         if page_id is None:
-            return categories
+            return categories, gen_by
 
         # if it leads to redirect, get the redirect (assuming only one redirect)
         redirect_name = self.r.get(self.prep["redirect"] + page_id)
@@ -229,7 +229,7 @@ class WikipediaRedis(AbstractWikipedia):
             #       now only passes
             categories.append(i)
 
-        return categories
+        return categories, gen_by
 
 
     def change_language(self, lang):
