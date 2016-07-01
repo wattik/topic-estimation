@@ -209,7 +209,7 @@ class WikipediaRedis(AbstractWikipedia):
         categories = []
         gen_by = "redis"
 
-        # Chech if there is any page of this name
+        # Check if there is any page of this name
         page_id = self.r.get(self.prep["page"] + name)
         if page_id is None:
             return categories
@@ -220,7 +220,7 @@ class WikipediaRedis(AbstractWikipedia):
             page_id = self.r.get(self.prep["page"] + redirect_name)
 
         # get its categories
-        response = self.r.lrange(self.prep["category"] + page_id, O, -1)
+        response = self.r.lrange(self.prep["category"] + page_id, 0, -1)
 
         # convert them into unicode and
         for i in response:
