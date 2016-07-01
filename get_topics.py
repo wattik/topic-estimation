@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     # wiki = WikipediaMySQL("socialbakers", "tajneheslo")
     wiki = WikipediaRedis()
-    estimator = TopicEstimator(wiki)
+    estimator = TopicEstimator(wiki, level=6)
 
     proposed_topics, list_of_parents =  estimator.estimate_topic(text)
 
