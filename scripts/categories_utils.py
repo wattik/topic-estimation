@@ -72,6 +72,16 @@ class Token2Topic(object):
 
         return output
 
+
+    """
+    Processes the proposed categories so that the final list:
+        - includes unique items only,
+        - with lowered text,
+        - and doesn't include the parent node again (no simple backloops)
+
+    Although some of those shall not happen because this is secured already on lower levels by wikipedia walkers, it's
+    good practise to test it for sure.
+    """
     def _process_proposals(self, topic, list_of_categories):
         list_of_categories = list(set(list_of_categories))
         output = []
