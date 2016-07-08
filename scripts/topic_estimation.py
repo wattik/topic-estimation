@@ -53,6 +53,8 @@ class TopicEstimator(object):
         # Choose the best proposals of all proposed topics.
         proposed_topics = self._filter_topics(proposed_topics)
 
+        # TODO: revise list_of parents accroding to filtered topics
+
         return proposed_topics, list_of_parents
 
 
@@ -113,11 +115,37 @@ class TopicEstimator(object):
 
 
     def _filter_topics(self, proposed_topics):
+        temp = []
 
-        # TODO: filter some of the topics
+        # exclude those that start with:
+        starts_with = [u'údržba:', u'wikipedie:', u'wikipedia:', u'šablony:']
+        # exlcude those that include those
+        includes = [u'pahýly']
 
+        for item in proposed_topics:
+            topic = item.topic
 
-        return proposed_topics
+            # check starts
+            positive = False
+            for start in starts_with:
+                if topic.find(start) == 0:
+                    positive = True
+                    break
+
+            if positive: continue
+
+            # check includes
+            positive = False
+            for include in includes:
+                if topic.find(include) >= 0:
+                    positive = True
+                    break
+
+            if positive: continue
+
+            temp.append(item)
+
+        return temp
 
 
 
