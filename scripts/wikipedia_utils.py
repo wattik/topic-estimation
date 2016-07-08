@@ -224,25 +224,34 @@ class WikipediaRedis(AbstractWikipedia):
         if not list_of_page_proposals:
             return categories, gen_by
 
-        # The list is not empty, we've got proposals.
+        # The list is not empty, we've got proposals. Let's find redirects.
+        checked_page_proposals = []
         for page_id in list_of_page_proposals:
+            # If it leads to a redirect, get the redirect's page id.
+            redirect_name = self.r.get(self.prep["redirect"] + page_id)
+            # if page_is is a redirect:
+            if redirect_name is not None:
+                proposals = self.r.lrange(self.prep["page"] + redirect_name, 0, -1)
+                checked_page_proposals = checked_page_proposals + proposals
+            # if it's not:
+            else:
+                checked_page_proposals.append(page_id)
+
+        # unigness of items check, loop 'em again > fetch categories of all ids
+        for page_id in list(set(checked_page_proposals)):
             categories = categories + self._single_page_id_to_categories(page_id)
 
         return categories, gen_by
 
-    def _single_page_id_to_categories(self, page_id):
-        # If it leads to a redirect, get the redirect's page id.
-        redirect_name = self.r.get(self.prep["redirect"] + page_id)
-        if redirect_name is not None:
-            page_id = self.r.get(self.prep["page"] + redirect_name)
 
+    def _single_page_id_to_categories(self, page_id):
         # Get the page's categories
         proposed_categories = self.r.lrange(self.prep["category"] + page_id, 0, -1)
 
         # convert string items (categories) into unicode
         proposed_categories = self._unicode(proposed_categories)
 
-        # Check whether this page is not a disambiguatino page.
+        # Check whether this page is not a disambiguation page.
         if self._is_disambiguation_page(proposed_categories):
             # If so, get its links
             links = self.r.lrange(self.prep["pagelinks"] + page_id, 0, -1)
@@ -255,7 +264,7 @@ class WikipediaRedis(AbstractWikipedia):
 
     def _filter_links(self, links):
         temp = []
-        black_list = [u'název_článku', u'odkaz_na_rozcestník', u'rozcestník', u'článek']
+        black_list = [u'název_článku', u'odkaz_na_rozcestník', u'rozcestník', u'článek'] # TODO add more, probably needed
         for link in links:
             if link not in black_list:
                 temp.append(link)
