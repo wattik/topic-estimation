@@ -25,13 +25,13 @@ class AbstractWikipedia(object):
         __DISAMBIGUATION_CATEGORIES = {'cs': u'wikipedie:rozcestníky',
                                        'en': u'Disambiguation_pages'} #TODO check for EN
 
-        if type(name) == unicode or type(name) == str:
+        if name is unicode or name is str:
             if name == __DISAMBIGUATION_CATEGORIES[self.lang]:
                 return True
 
-        if type(name) == list:
+        if isinstance(name, list):
             for i in name:
-                if name == __DISAMBIGUATION_CATEGORIES[self.lang]:
+                if i == __DISAMBIGUATION_CATEGORIES[self.lang]:
                     return True
 
         return False
@@ -264,7 +264,7 @@ class WikipediaRedis(AbstractWikipedia):
 
     def _filter_links(self, links):
         temp = []
-        black_list = [u'název_článku', u'odkaz_na_rozcestník', u'rozcestník', u'článek'] # TODO add more, probably needed
+        black_list = [u'název_článku', u'odkaz_na_rozcestník', u'rozcestník', u'rozcestníky', u'článek'] # TODO add more, probably needed
         for link in links:
             if link not in black_list:
                 temp.append(link)
