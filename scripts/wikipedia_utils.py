@@ -22,7 +22,7 @@ class AbstractWikipedia(object):
 
     def _is_disambiguation_page(self, name):
 
-        __DISAMBIGUATION_CATEGORIES = {'cs': u'Wikipedie:Rozcestníky',
+        __DISAMBIGUATION_CATEGORIES = {'cs': u'wikipedie:rozcestníky',
                                        'en': u'Disambiguation_pages'} #TODO check for EN
 
         if type(name) == unicode or type(name) == str:
