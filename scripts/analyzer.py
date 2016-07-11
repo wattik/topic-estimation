@@ -23,7 +23,7 @@ class Analyzer(object):
                 biggest = v
                 if v > biggest:
                     standings = []
-                standings.append(unicode(k,"utf-8"))
+                standings.append(k)
 
         num = len(standings)
 
