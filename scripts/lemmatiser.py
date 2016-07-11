@@ -9,4 +9,4 @@ class Lemmatiser(object):
         self.r = redis.StrictRedis()
 
     def lemmatise(self, word):
-        return self.r.get("GET d:" + word)
+        return self.r.get(u'd:' + word)

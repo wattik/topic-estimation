@@ -83,11 +83,17 @@ class TopicEstimator(object):
     def _lemmatise_tokens(self, tokens):
         temp = []
         lemm = Lemmatiser()
+
+        counter = 0
+
         for token in tokens:
             proposal = lemm.lemmatise(token)
             if proposal is not None:
-                temp.append(proposal)
-
+                temp.append(unicode(proposal, "utf-8"))
+                counter += 1
+            else:
+                temp.append(token)
+        del lemm
         return temp
 
 
