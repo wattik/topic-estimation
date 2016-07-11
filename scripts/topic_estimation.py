@@ -3,12 +3,12 @@
 
 __author__ = 'Wattik'
 
-import sys
+
 from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
-from categories_utils import Token2Topic, Topic
-from wikipedia_utils import *
+from categories_utils import Token2Topic
 from collections import deque
+from lemmatiser import Lemmatiser
 
 """
 The script estimates topics of a short text based on Wikipedia categories.
@@ -39,18 +39,14 @@ class TopicEstimator(object):
         # Breaking apart into n-grams, so far n=3
         tokens = self._tokenize(text)
 
-        # TODO: additional filtering of words
-        # additional layers and filters here
-        # Synonyms etc
-        # Stemmatization, lemmatization, stopwords, etc.
+        # Lemmatise
+        tokens = self._lemmatise_tokens(tokens)
 
         # Given tokens find categories in wiki's net. Go 2 levels deep.
         list_of_parents = self._find_topics(tokens)
 
         # Choose the best proposals of all proposed topics.
         proposed_topics = self._filter_tree(list_of_parents)
-
-        # TODO: revise list_of parents accroding to filtered topics
 
         return proposed_topics, list_of_parents
 
@@ -84,12 +80,21 @@ class TopicEstimator(object):
 
         return tokens
 
+    def _lemmatise_tokens(self, tokens):
+        temp = []
+        lemm = Lemmatiser()
+        for token in tokens:
+            proposal = lemm.lemmatise(token)
+            if proposal is not None:
+                temp.append(proposal)
+
+        return temp
+
 
     def _find_topics(self, tokens):
 
         helper = Token2Topic(self.wiki, self.level)
 
-        proposed_topics = []
         list_of_parents = []
 
         step = float(100)/float(len(tokens))
