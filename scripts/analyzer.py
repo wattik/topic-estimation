@@ -2,13 +2,37 @@
 
 __author__ = 'Wattik'
 
-class Visualizer(object):
+class Analyzer(object):
 
     def __init__(self, list_of_topics, list_of_parents):
         self.list_of_topics = list_of_topics
         self.list_of_parents = list_of_parents
         self.dict_by_levels = None
         self.list_of_frequencies = None
+
+
+    def get_most_frequent(self, n = 2):
+        if self.list_of_frequencies is None:
+            self.list_of_frequencies = self._get_frequencies(self.list_of_topics)
+
+        fr = self.list_of_frequencies
+        standings = []
+        biggest = 0
+        for k,v in fr.iteritems():
+            if v >= biggest:
+                biggest = v
+                if v > biggest:
+                    standings = []
+                standings.append(k)
+
+        num = len(standings)
+
+        if num < n:
+            # TODO: malo navrhu
+            print "malo navrhu"
+
+        return standings
+
 
     def _get_frequencies(self, list):
 

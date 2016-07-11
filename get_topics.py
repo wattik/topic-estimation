@@ -6,7 +6,7 @@ __author__ = 'Wattik'
 from scripts.topic_estimation import TopicEstimator
 from scripts.wikipedia_utils import *
 import sys
-from scripts.visualizer import Visualizer
+from scripts.analyzer import Analyzer
 
 if __name__ == "__main__":
 
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     #####################
 
-    vis = Visualizer(proposed_topics, list_of_parents)
+    vis = Analyzer(proposed_topics, list_of_parents)
     print
     print "Frekvence kategorií celkem:"
     print
