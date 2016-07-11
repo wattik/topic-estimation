@@ -8,16 +8,13 @@ from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
 from categories_utils import Token2Topic, Topic
 from wikipedia_utils import *
+from collections import deque
 
 """
 The script estimates topics of a short text based on Wikipedia categories.
 
-It's expected that first argument is the text. For example:
-
     python topic-estimation "First documented in the 13th century, Berlin was the capital of the Kingdom of Prussia (1701–1918), the German Empire (1871–1918), the Weimar Republic (1919–33) and the Third Reich (1933–45)."
 
-
-The output is a set of topics. (TBD...)
 
 """
 
@@ -48,10 +45,10 @@ class TopicEstimator(object):
         # Stemmatization, lemmatization, stopwords, etc.
 
         # Given tokens find categories in wiki's net. Go 2 levels deep.
-        proposed_topics, list_of_parents = self._find_topics(tokens)
+        list_of_parents = self._find_topics(tokens)
 
         # Choose the best proposals of all proposed topics.
-        proposed_topics = self._filter_topics(proposed_topics)
+        proposed_topics = self._filter_tree(list_of_parents)
 
         # TODO: revise list_of parents accroding to filtered topics
 
@@ -100,8 +97,7 @@ class TopicEstimator(object):
         if TopicEstimator.DEBUG: print "\n%0.1f %%" % progress
 
         for token in tokens:
-            new_incomers, parent = helper.get_topics(token)
-            proposed_topics = proposed_topics + new_incomers
+            parent = helper.get_topics(token)
             list_of_parents.append(parent)
 
             progress += step
@@ -110,42 +106,83 @@ class TopicEstimator(object):
         del helper
         if TopicEstimator.DEBUG: print "=======================================\n"
 
-        return proposed_topics, list_of_parents
+        return list_of_parents
 
 
 
     def _filter_topics(self, proposed_topics):
         temp = []
 
-        # exclude those that start with:
-        starts_with = [u'údržba:', u'wikipedie:', u'wikipedia:', u'šablony:']
-        # exlcude those that include those
-        includes = [u'pahýly']
-
         for item in proposed_topics:
             topic = item.topic
 
-            # check starts
-            positive = False
-            for start in starts_with:
-                if topic.find(start) == 0:
-                    positive = True
-                    break
-
-            if positive: continue
-
-            # check includes
-            positive = False
-            for include in includes:
-                if topic.find(include) >= 0:
-                    positive = True
-                    break
-
-            if positive: continue
+            if self.__is_filtred(topic):
+                continue
 
             temp.append(item)
 
         return temp
 
+    def _filter_tree(self, list_of_parents):
+        stack = deque()
+        stack.extend(list_of_parents)
 
+        list_of_proposals = []
+
+        while len(stack) > 0:
+            item = stack.popleft()
+
+            temp = []
+            if item.parents is None:
+                continue
+            for parent in item.parents:
+                if not self.__is_filtred(parent.topic):
+                  temp.append(parent)
+
+            item.parents = temp
+
+            list_of_proposals.extend(temp)
+            stack.extend(temp)
+
+        return list_of_proposals
+
+
+    def __is_filtred(self, word):
+        # exclude those that start with:
+        starts_with = [u'údržba:', u'wikipedie:', u'wikipedia:', u'šablony']
+        # exlcude those that include those
+        includes = [u'pahýly', u'kategorie_k_zaplnění', u'články_přeložené_z_enwiki', u'pouze_dočasná_použití', u'články_s_autoritní_kontrolou']
+        # exclude those ending with:
+        ends_with = [u'šablony']
+
+
+        # check starts
+        positive = False
+        for start in starts_with:
+            if word.find(start) == 0:
+                positive = True
+                break
+
+        if positive: return positive
+
+        # check includes
+        positive = False
+        for include in includes:
+            if word.find(include) >= 0:
+                positive = True
+                break
+
+        if positive: return positive
+
+        # check ends
+        positive = False
+        for end in ends_with:
+            if word.endswith(end) == True:
+                positive = True
+                break
+
+        if positive: return positive
+
+
+        return positive
 

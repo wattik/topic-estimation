@@ -10,8 +10,10 @@ from scripts.visualizer import Visualizer
 
 if __name__ == "__main__":
 
-    # text = u'java ruby programovací jazyky'
-    text = sys.argv[1]
+    #text = u'Java je lepší programovací jazyk než Python. Ruby jim nesahá ani po kotníky.'
+    text = u'Meteorologové rozšířili současnou výstrahu před vysokými teplotami o varování před velmi silnými bouřkami. Ojediněle je mohou doprovázet i přívalové srážky a krupobití. V pondělí o tom informoval Český hydrometeorologický ústav (ČHMÚ).'
+    # text = u'Sobotka je krásné město.'
+    #text = sys.argv[1]
 
     print "Looking for topics in: " + text
 
@@ -24,10 +26,16 @@ if __name__ == "__main__":
     #####################
 
     vis = Visualizer(proposed_topics, list_of_parents)
+    print
+    print "Frekvence kategorií celkem:"
+    print
     vis.print_frequencies()
     print
+    print "Frekvence kategorií podle úrovně zanoření"
     vis.print_frequencies_by_levels()
-    print "\n"
+    print
+    print "Strom všech nalezených kategorií"
+    print
     vis.print_tree()
 
 

@@ -14,7 +14,7 @@ class Topic(object):
         self.gen_by = u'N/A'
 
     def __repr__(self):
-        return self.topic + u' by ' + self.generating_ngram
+        return self.topic + u'     (' + self.generating_ngram + u')'
 
     def __str__(self):
         return self.__repr__()
@@ -44,7 +44,7 @@ class Token2Topic(object):
 
         topics = self._dfs_over_categories(parent_topic)
 
-        return topics, parent_topic
+        return parent_topic
 
     """
     Depth-first search throughout categories.
