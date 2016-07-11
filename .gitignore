@@ -87,3 +87,13 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+.idea/misc.xml
+
+.idea/modules.xml
+
+.idea/topic-estimation.iml
+
+.idea/vcs.xml
+
+.idea/workspace.xml

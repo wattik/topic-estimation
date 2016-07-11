@@ -11,9 +11,9 @@ from scripts.analyzer import Analyzer
 if __name__ == "__main__":
 
     #text = u'Java je lepší programovací jazyk než Python. Ruby jim nesahá ani po kotníky.'
-    text = u'Meteorologové rozšířili současnou výstrahu před vysokými teplotami o varování před velmi silnými bouřkami. Ojediněle je mohou doprovázet i přívalové srážky a krupobití. V pondělí o tom informoval Český hydrometeorologický ústav (ČHMÚ).'
+    #text = u'Meteorologové rozšířili současnou výstrahu před vysokými teplotami o varování před velmi silnými bouřkami. Ojediněle je mohou doprovázet i přívalové srážky a krupobití. V pondělí o tom informoval Český hydrometeorologický ústav (ČHMÚ).'
     # text = u'Sobotka je krásné město.'
-    #text = sys.argv[1]
+    text = sys.argv[1]
 
     print "Looking for topics in: " + text
 
