@@ -32,10 +32,10 @@ After a window has been poped up, select all libraries and download them. It's p
 
 Check the `wiki_db/cs` folder which shall comprise sql dumps and, optionally, ready-to-use redis import files. The latter is typically names `<table name>_redis.txt`.
 In case those are included (and are up-to-date), you can skip to the step 2.
-If the folder is empty, download the sql dumps from `https://dumps.wikimedia.org/cswiki/`. It has been tested that the `latest` folder is usually incomplete, therefore, use the latest full dump named by numbers only.
-Download only those tables: `categorylinks`, `page`, `pagelinks`, `redirect`. And put them into the `wiki_db/cs` folder.
 
 ### STEP 1
+If the `wiki_db/cs` folder is empty, download the sql dumps from `https://dumps.wikimedia.org/cswiki/`. It has been tested that the `latest` folder is usually incomplete, therefore, use the latest full dump named by numbers only.
+Download only those tables: `categorylinks`, `page`, `pagelinks`, `redirect`. And put them into the `wiki_db/cs` folder.
 
 Go to the _wiki_db_ folder and run in terminal: `<dir to wiki_db>/sql2redis_cs.bash`.
 This script takes the sql dumps in wiki_db/cs as input and converts them into a redis mass-insert file. Also note that for different sql, dumps just change names in the bash script.  
@@ -50,7 +50,9 @@ Assuming a redis server is running. To insert a redis file into redis, run:
 
 `cat <dir to wiki_db>cs/pagelinks_redis.txt | redis-cli --pipe`
 
-`cat <dir to wiki_db>cs/redirects_redis_redis.txt | redis-cli --pipe`
+`cat <dir to wiki_db>cs/redirects_redis.txt | redis-cli --pipe`
+
+`cat <dir to wiki_db>cs/lemm_redis.txt | redis-cli --pipe`
 
 Now redis includes all data.
 
