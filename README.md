@@ -31,8 +31,8 @@ After a window has been poped up, select all libraries and download them. It's p
 ### General dependencies:
 
 1) Running redis server locally without password or usernames
-2) Redis is fill up with data
 
+2) Redis filled up with data
 
 ## Insert data into redis
 
@@ -88,11 +88,11 @@ Now execute the file by, for example in terminal:
  - pairs `<keyword>:<generated topic 1>,<generated topic 2>,...` separated by `|` using 2 levels
  - pairs `<keyword>:<generated topic 1>,<generated topic 2>,...` separated by `|` using 3 levels
 
-## Detailed structure
+## Detailed module structure
 
 The API of the module provides a central object working with the inside machinery. This object is called `TopicEstimator`.
 
-### TopicEstimator
+### TopicEstimator class
 The constructor follows this schema: `TopicEstimator(<WikipediaAbstract object>, n = 3, level = 2, verbosity = 0)`
 - **WikipediaAbstract object** is a redis instance handling the db connection
 - **n** stands for n-grams number
@@ -102,14 +102,14 @@ The constructor follows this schema: `TopicEstimator(<WikipediaAbstract object>,
 The only method in this class is `estimate_topic(<string text>)` which returns a tuple: `<proposed topics>`, `<list of parents>`. The former is a pythonic list of all topics detected in the text.
 The latter stands for a pythonic list of n-grams found in the text. Both lists comprises only `Topic` instances, i.e. an initial n-gram is considered as a topic as well.
 
-### WikipediaAbstract and its children
+### WikipediaAbstract class and its children
 
 The class is a Wikipedia browser. Initially, this repository included also MySQL browser and HTTP request browser which both proved to be slow.
 At this stag, only `WikipediaRedis` is supported.
 
 To create an instance, just type `wiki = WikipediaRedis()`. The `wiki` object is then inserted into the `TopicEstimator` constructor.
 
-### Analyzer
+### Analyzer class
 
 This class is used to print or generate statistics over the found topics.
 
@@ -122,6 +122,6 @@ The members of the tuple returned by the `TopicEstimator`'s method `estimate_top
 - **print_all_topics()**
 - **print_frequencies_by_levels()**
 
-### Topic
+### Topic class
 
 This class encapsulates a unicode string as a topic, list of parents in Wikipedia categorization and other information. It's an essential class that is used throughout the module. For example, not only proposed topics are of a Topic instance but n-grams found in input text as well.
