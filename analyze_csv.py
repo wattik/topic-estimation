@@ -20,7 +20,7 @@ def estimate(estimator, word):
 
     return string_topics, keyword_topic
 
-def compute_csv_file(name):
+def compute_csv_file(name, out):
     source_file = name
 
     wiki = WikipediaRedis()
@@ -31,7 +31,7 @@ def compute_csv_file(name):
     stack_of_all_proposals_level3 = []
 
     with open(source_file) as source:
-        with open('out.csv', 'a+') as output:
+        with open(out, 'a+') as output:
             reader = csv.reader(source)
             headers = reader.next()
             writer = csv.writer(output)
@@ -67,22 +67,16 @@ def compute_csv_file(name):
 
                 print str(count) + " finished."
 
-                # print all per frequency
-                # counter = Counter(stack_of_all_proposals_level2)
-                # for k,v in counter.most_common():
-                #     print k + u' : ' + unicode(v)
-                #
-                # counter = Counter(stack_of_all_proposals_level3)
-                # for k, v in counter.most_common():
-                #     print k + u' : ' + unicode(v)
-
 
 if __name__ == "__main__":
-    compute_csv_file("../176688316811_posts.csv")
-    compute_csv_file("../286483085526_posts.csv")
-    compute_csv_file("../120461304659141_posts.csv")
-    compute_csv_file("../170261873008353_posts.csv")
-    compute_csv_file("../194690260556051_posts.csv")
+
+    outputfile = "../out.csv"
+
+    compute_csv_file("../176688316811_posts.csv", outputfile)
+    compute_csv_file("../286483085526_posts.csv", outputfile)
+    compute_csv_file("../120461304659141_posts.csv", outputfile)
+    compute_csv_file("../170261873008353_posts.csv", outputfile)
+    compute_csv_file("../194690260556051_posts.csv", outputfile)
 
 
 
