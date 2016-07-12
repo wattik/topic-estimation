@@ -7,16 +7,18 @@ This repository comprises an implementation of a short-text topic estimator. The
 
 ### Python modules:
 
-It's suggested to use **pip** in order to install those modules. **sudo** will be needed.
+It's suggested to use **pip** when installing those modules, also note that **sudo** will be needed.
 
 1) **nltk** and its libraries
 
 2) **redis** for python
 
-Ad 1), first install the module, then download its libraries by typing into python console:
+Ad 1) First install the module, then download its libraries by typing into python console:
+
 `import nltk`
 
-`nltk.download()`
+`nltk.download()` After a window has been poped up, select all libraries and download them. It's possible that some of them will fail, which should not cause any problems in this usage.
+
 
 ### General dependencies:
 
@@ -26,25 +28,35 @@ Ad 1), first install the module, then download its libraries by typing into pyth
 
 ## Insert data into redis
 
-Go to the _wiki_db_ folder and run in terminal:
-`./sql2redis_cs.bash`.
-This script takes the sql dumps in wiki_db/cs as input and converts them into a redis mass insert file. Also note that for different sql dumps just change names in the bash script.  
+Check the `wiki_db/cs` folder which shall comprise sql dumps and, optionally, ready-to-use redis import files. The latter is typically names `<table name>_redis.txt`.
+In case those are included (and are up-to-date), you can skip to the step 2.
+If the folder is empty, download the sql dumps from `https://dumps.wikimedia.org/cswiki/`. It has been tested that the `latest` folder is usually incomplete, therefore, use the latest full dump named by numbers only.
+Download only those tables: `categorylinks`, `page`, `pagelinks`, `redirect`. And put them into the `wiki_db/cs` folder.
+
+### STEP 1
+
+Go to the _wiki_db_ folder and run in terminal: `<dir to wiki_db>/sql2redis_cs.bash`.
+This script takes the sql dumps in wiki_db/cs as input and converts them into a redis mass-insert file. Also note that for different sql, dumps just change names in the bash script.  
+
+### STEP 2
 
 Assuming a redis server is running. To insert a redis file into redis, run:
-`cat page_redis.txt | redis-cli --pipe`
 
-`cat categorylinks_redis.txt | redis-cli --pipe`
+`cat <dir to wiki_db>cs/page_redis.txt | redis-cli --pipe`
 
-`cat pagelinks_redis.txt | redis-cli --pipe`
+`cat <dir to wiki_db>cs/categorylinks_redis.txt | redis-cli --pipe`
 
-`cat redirects_redis_redis.txt | redis-cli --pipe`
+`cat <dir to wiki_db>cs/pagelinks_redis.txt | redis-cli --pipe`
 
-Now redis includes all the data.
+`cat <dir to wiki_db>cs/redirects_redis_redis.txt | redis-cli --pipe`
 
+Now redis includes all data.
 
 ## How to run it
 
-There are several task one can do with the module, however, two general ways are suggested: estimate a topic of a specific text, or run the estimator for several csv file.
+There are several tasks one require from the module, however, two general ways are suggested: estimate a topic of a specific text, or run the estimator for several csv file.
+
+### Single text use-case
 
 For simple topic estimation of a specific text, use **get_topics.py**. This file is listed in the root folder of the module and can be executed, for example, from terminal by:
 `python <dir to module>/get_topics.py "text"`
@@ -53,6 +65,8 @@ The given shell input generates lines of text that will include:
 - frequencies of topics generally
 - frequencies of topics per level
 - tree of topics
+
+### CSV file use-case
 
 For scanning csv files, use **analyze_csv.py** located in the root directory of the module. Although this script cannot be executed from terminal without changes, these will be essentially straight forward.
 It is as easy as: open the **analyze_csv.py** and fine the __main__ part of the document in the very bottom. To walk through a csv file, use:
@@ -66,12 +80,23 @@ Now execute the file by, for example in terminal:
 
 ## Detailed structure
 
+The API of the module provides a central object working with the inside machinery. This object is called `TopicEstimator`.
 
+### TopicEstimator
+The constructor follows this schema: `TopicEstimator(<WikipediaAbstract object>, n = 3, level = 2, verbosity = 0)`
+- **WikipediaAbstract object** is a redis instance handling the db connection
+- **n** stands for n-grams number
+- **level** stands for depth-level of search
+- **verbosity**: 0 will create no process-info output, >1 will print out everything
 
+The only method in this class is `estimate_topic(<string text>)` which returns a tuple: `<proposed topics>`, `<list of parents>`. The former is a pythonic list of all topics detected in the text.
+The latter stands for a pythonic list of n-grams found in the text. Both lists comprises only `Topic` instances, i.e. an initial n-gram is considered as a topic as well.
 
+### WikipediaAbstract and its children
 
+The class is a Wikipedia browser. Initially, this repository included also MySQL browser and HTTP request browser which both proved to be slow.
+At this stag, only `WikipediaRedis` is supported.
 
+To create an isntance, just type `wiki = WikipediaRedis()`. The `wiki` object is then inserted into the `TopicEstimator` constructor.
 
-
-
-
+### Analyzer
