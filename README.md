@@ -13,6 +13,13 @@ It's suggested to use **pip** when installing those modules, also note that **su
 
 2) **redis** for python
 
+To put it shortly:
+
+`sudo pip install nltk`
+
+`sudo pip install redis`
+
+
 Ad 1) First install the module, then download its libraries by typing into python console:
 
 `import nltk`
@@ -20,7 +27,6 @@ Ad 1) First install the module, then download its libraries by typing into pytho
 `nltk.download()`
 
 After a window has been poped up, select all libraries and download them. It's possible that some of them will fail, which should not cause any problems in this usage.
-
 
 ### General dependencies:
 
@@ -30,25 +36,25 @@ After a window has been poped up, select all libraries and download them. It's p
 
 ## Insert data into redis
 
-Check the `wiki_db/cs` folder which shall comprise sql dumps and, optionally, ready-to-use redis import files. The latter is typically names `<table name>_redis.txt`.
-In case those are included (and are up-to-date), you can skip to the step 2.
+Check the `wiki_db/cs` folder which shall comprise 4 zip archives which includes ready-to-use redis import files. When exported, there will be 4 files following this schema `<table name>_redis.txt`.
+In case all of the above said is true and the files are included (and are up-to-date), you can skip to the step 2.
 
 ### STEP 1
-If the `wiki_db/cs` folder is empty, download the sql dumps from `https://dumps.wikimedia.org/cswiki/`. It has been tested that the `latest` folder is usually incomplete, therefore, use the latest full dump named by numbers only.
-Download only those tables: `categorylinks`, `page`, `pagelinks`, `redirect`. And put them into the `wiki_db/cs` folder.
+If the `wiki_db/cs` folder is empty, download the sql dumps from `https://dumps.wikimedia.org/cswiki/`. It has been tested that the `latest` folder is usually incomplete, therefore, use the latest dump named by numbers only.
+Download only those tables: `categorylinks`, `page`, `redirect`. And put them into the `wiki_db/cs` folder.
 
-Go to the _wiki_db_ folder and run in terminal: `<dir to wiki_db>/sql2redis_cs.bash`.
-This script takes the sql dumps in wiki_db/cs as input and converts them into a redis mass-insert file. Also note that for different sql, dumps just change names in the bash script.  
+Go to the `wiki_db` folder and run in terminal: `<dir to wiki_db>/sql2redis_cs.bash`.
+This script takes the sql dumps in wiki_db/cs as input and converts them into a redis mass-insert file. Also note that for different sql, dumps just change names in the bash script.
+
+If `lemm_redis.txt` is missing as well, follow the instructions in:  https://github.com/wattik/word-lemmatisation.
 
 ### STEP 2
 
-Assuming a redis server is running. To insert a redis file into redis, run:
+Assuming a redis server is running, to insert a redis file into redis run:
 
 `cat <dir to wiki_db>cs/page_redis.txt | redis-cli --pipe`
 
 `cat <dir to wiki_db>cs/categorylinks_redis.txt | redis-cli --pipe`
-
-`cat <dir to wiki_db>cs/pagelinks_redis.txt | redis-cli --pipe`
 
 `cat <dir to wiki_db>cs/redirects_redis.txt | redis-cli --pipe`
 
@@ -115,3 +121,7 @@ The members of the tuple returned by the `TopicEstimator`'s method `estimate_top
 - **print_frequencies()**
 - **print_all_topics()**
 - **print_frequencies_by_levels()**
+
+### Topic
+
+This class encapsulates a unicode string as a topic, list of parents in Wikipedia categorization and other information. It's an essential class that is used throughout the module. For example, not only proposed topics are of a Topic instance but n-grams found in input text as well.
