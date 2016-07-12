@@ -10,26 +10,53 @@ class Analyzer(object):
         self.dict_by_levels = None
         self.list_of_frequencies = None
 
+    def get_generators(self, list_of_topics):
+        keyword_topic = {}
 
-    def get_most_frequent(self, n = 2):
+        for topic in list_of_topics:
+            for parent in self.list_of_parents:
+                if parent.has_topic(topic):
+                    if parent not in keyword_topic:
+                        keyword_topic.update({parent:[topic]})
+                    else:
+                        keyword_topic[parent] += [topic]
+
+        return keyword_topic
+
+    def get_most_frequent(self, n=2):
         if self.list_of_frequencies is None:
             self.list_of_frequencies = self._get_frequencies(self.list_of_topics)
 
-        fr = self.list_of_frequencies
+        fr = dict()
+        fr.update(self.list_of_frequencies)
+
+        num = 0
+        standings =  []
+
+        while num < n:
+
+            if len(fr) == 0: break
+
+            temp = self._get_most_freguent_list(fr)
+            for i in temp:
+                fr.pop(i)
+            standings = standings + temp
+            num += len(standings)
+
+        return standings
+
+
+    def _get_most_freguent_list(self, dictionary):
+        fr = dictionary
         standings = []
         biggest = 0
-        for k,v in fr.iteritems():
+
+        for k, v in fr.iteritems():
             if v >= biggest:
-                biggest = v
                 if v > biggest:
                     standings = []
+                biggest = v
                 standings.append(k)
-
-        num = len(standings)
-
-        if num < n:
-            # TODO: malo navrhu
-            print "malo navrhu"
 
         return standings
 

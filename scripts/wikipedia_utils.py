@@ -254,10 +254,11 @@ class WikipediaRedis(AbstractWikipedia):
         # Check whether this page is not a disambiguation page.
         if self._is_disambiguation_page(proposed_categories):
             # If so, get its links
+            """
             links = self.r.lrange(self.prep["pagelinks"] + page_id, 0, -1)
             links = self._unicode(links)
             links = self._filter_links(links)
-            proposed_categories = links
+            proposed_categories = links"""
 
         return proposed_categories
 

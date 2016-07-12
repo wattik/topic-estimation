@@ -3,6 +3,7 @@
 
 __author__ = 'Wattik'
 
+from collections import deque
 
 class Topic(object):
 
@@ -12,6 +13,21 @@ class Topic(object):
         self.topic = topic
         self.parents = None
         self.gen_by = u'N/A'
+
+    def has_topic(self, has_topic):
+        stack = deque()
+
+        if self.parents is not None: stack.extend(self.parents)
+
+        while len(stack) > 0:
+            topic = stack.popleft()
+
+            if topic.topic == has_topic:
+                return True
+
+            if topic.parents is not None: stack.extend(topic.parents)
+
+        return False
 
     def __repr__(self):
         return self.topic + u'     (' + self.generating_ngram + u')'

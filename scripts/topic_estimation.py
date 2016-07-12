@@ -22,10 +22,16 @@ class TopicEstimator(object):
 
     DEBUG = True
 
-    def __init__(self, wiki, n = 3, level = 2):
+    def __init__(self, wiki, n = 3, level = 2, verbosity = 0):
         self.level = level
         self.n = n
         self.wiki = wiki
+        self.verbosity = verbosity
+
+        if verbosity > 10:
+            TopicEstimator.DEBUG=True
+        else:
+            TopicEstimator.DEBUG=False
 
 
     def estimate_topic(self, text):
@@ -33,17 +39,31 @@ class TopicEstimator(object):
         if len(text) == 0:
             raise Exception("Text is not long enough.")
 
+        if TopicEstimator.DEBUG: print "Prepocessing the text."
+
         # Basic preprocessing such as: utf-8 encoding, lowercasing
         text = self._preprocess(text)
+
+        if TopicEstimator.DEBUG: print "Tokenizing the text."
 
         # Breaking apart into n-grams, so far n=3
         tokens = self._tokenize(text)
 
+        if TopicEstimator.DEBUG: print "Lemmatising the tokens."
+
         # Lemmatise
         tokens = self._lemmatise_tokens(tokens)
 
+        if TopicEstimator.DEBUG: print "Filtering tokens."
+
+        tokens = self._filter_tokens(tokens)
+
+        if TopicEstimator.DEBUG: print "Finding topics."
+
         # Given tokens find categories in wiki's net. Go 2 levels deep.
         list_of_parents = self._find_topics(tokens)
+
+        if TopicEstimator.DEBUG: print "Filtering\n\n"
 
         # Choose the best proposals of all proposed topics.
         proposed_topics = self._filter_tree(list_of_parents)
@@ -96,6 +116,17 @@ class TopicEstimator(object):
         del lemm
         return temp
 
+    def _filter_tokens(self, tokens):
+        temp = []
+
+        stop_words = [u'ten', u'http']
+
+        for token in tokens:
+            if token not in stop_words and len(token) > 2:
+                temp.append(token)
+        return temp
+
+
 
     def _find_topics(self, tokens):
 
@@ -115,7 +146,6 @@ class TopicEstimator(object):
             if TopicEstimator.DEBUG: print "%0.1f %%" % progress
 
         del helper
-        if TopicEstimator.DEBUG: print "=======================================\n"
 
         return list_of_parents
 
@@ -160,11 +190,12 @@ class TopicEstimator(object):
 
     def __is_filtred(self, word):
         # exclude those that start with:
-        starts_with = [u'údržba:', u'wikipedie:', u'wikipedia:', u'šablony']
+        starts_with = [u'údržba:', u'wikipedie:', u'wikipedia:', u'šablony', u'rozcestník', u'písmena', u'monitoring', u'články_s_odkazem', u'přesměrování', u'miniportály', u'portály']
         # exlcude those that include those
-        includes = [u'pahýly', u'kategorie_k_zaplnění', u'články_přeložené_z_enwiki', u'pouze_dočasná_použití', u'články_s_autoritní_kontrolou']
+        includes = [u'pahýly', u'kategorie_k_zaplnění', u'články_přeložené_z_enwiki', u'pouze_dočasná_použití', u'články_s_autoritní_kontrolou', u'zkratky', u'zkratka', u'etymologie', u'slova_a_výrazy']
+        includes += [u'interpunkce', u'latinka', u'znaky_písma', u'větná_stavba', u'symboly', u'značky', u'šablony', u'terminologie', u'články_podle_témat']
         # exclude those ending with:
-        ends_with = [u'šablony']
+        ends_with = [u'šablony', u'portály', u'wikipedie']
 
 
         # check starts
@@ -193,6 +224,10 @@ class TopicEstimator(object):
                 break
 
         if positive: return positive
+
+        # delete those shorter then 3
+        if len(word) < 3:
+            return True
 
 
         return positive
